@@ -1,0 +1,113 @@
+﻿@using exerciseCrud.Models;
+@model BoardInfo
+@{
+    ViewBag.Title = "Detail";
+
+}
+
+<script>
+    //boardId정의
+    var boardId = @ViewBag.boardId;
+</script>
+
+<div id="DetailDIV"></div>
+
+<script id="DetailTmpl" type="text/j-query-tmpl">
+    
+        <h2>${boardTitle}</h2>
+
+        <div>
+            <h4>${userId}</h4>
+            <p>
+                <input type="button" style="color:red" value="글  삭제!" onclick="deleteBoard()"> |
+                <input type="button" style="color:green" value="글  수정!" onclick="updateBoard()"> |
+                <input type="button" style="color:purple" value="뒤로가기!" onclick="back()">
+            </p>
+            <hr />
+            <dl class="dl-horizontal">
+                <dt>게시판넘버</dt>
+                <dd>${boardId}</dd>
+                <dt>제목</dt>
+                <dd>${boardTitle}</dd>
+                <dt>내용</dt>
+                <dd id="content"></dd>
+                <dt>날짜</dt>
+                <dd>${regDate.substring(0,10)}</dd>
+                <dt>조회수</dt>
+                <dd>${viewCount}</dd>
+                <dt>아이디</dt>
+                <dd>${userId}</dd>
+
+                <dt>첨부파일</dt>
+                {{if filePath == ''}}
+                <dd>첨부파일이 없습니다!</dd>
+                {{else}}
+                <dd><a href="${filePath.substring(filePath.indexOf("\Upload"))}" name="pUpload" id="pUpload" download>${filePath.substring(filePath.indexOf("-")+1)}</a></dd>
+                {{/if}}
+            </dl>
+        </div>
+        <hr />
+        <h4>댓글란</h4>
+
+    </script>
+
+
+<script type="text/javascript">
+    function deleteBoard() {
+        //삭제
+        $.ajax({
+            url: "//exerciseCrud.com/Exercise/Delete/"+boardId,
+            success: function (d) {
+                alert(d);
+                location.href = "/Board/List";
+            },
+            error: function (d) {
+                alert(d);
+                }
+            });
+    };
+
+    function updateBoard() {
+        location.href = "/Board/UpdateView?boardId=" + boardId;
+    };
+    function back() {
+        location.href = "/Board/List";
+    };
+    
+
+</script>
+<script>
+    $(function () {
+        init();
+    });
+
+    function init() {
+        
+        //init() - 자동조회수업+ 데이터GET
+        $.ajax({
+            url: "//exerciseCrud.com/Exercise/Detail/"+boardId,         
+            success: function (d) {
+                $("#DetailTmpl").tmpl(d).appendTo("#DetailDIV");
+                /*
+                var template = document.getElementById("content");
+                var html = d.boardContent;
+                console.log(html);
+                template.insertAdjacentElement('beforeend',html);
+                */
+              
+                var template = document.createElement('p');
+                // innerHTML을 사용하여 text를 html로 파싱 후 자식노드로 추가            
+                template.innerHTML = d.boardContent;            
+                document.getElementById("content").append(template);
+                
+               
+            }
+        });
+
+    };
+
+</script>
+<style>
+    [id=content] {border:1px solid black;}
+
+</style>

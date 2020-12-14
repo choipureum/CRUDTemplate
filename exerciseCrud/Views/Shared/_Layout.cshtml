@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>exerciseCRUD</title>
+    <script src="/js/jquery-1.12.3.min.js"></script>
+    <script src="~/Scripts/jquery.tmpl.min.js"></script>
+    <script type="text/javascript" src="~/dist/js/service/HuskyEZCreator.js" charset="utf-8"></script>
+   @* <script src="~/dropzone/dist/min/dropzone.min.js"></script>*@
+
+    @Styles.Render("~/dropzone/dist/min/dropzone.min.css")
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+ 
+    <div class="container body-content">
+        <div class="page-header">
+            <h1>iMBC </h1>
+
+        </div>
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now - Poo</p>
+            <p>ASP.NET | jQuery Tmpl </p>
+        </footer>
+    </div>
+
+    @*@Scripts.Render("~/bundles/jquery")*@
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

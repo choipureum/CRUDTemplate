@@ -1,0 +1,126 @@
+﻿@model exerciseCrud.Models.BoardInfo
+
+@{
+    ViewBag.Title = "UpdateView";
+}
+<script>
+    //boardId정의
+    var boardId = @ViewBag.boardId;
+</script>
+<div id="UpdateViewDIV"></div>
+
+<script id="UpdateViewTmpl" type="text/j-query-tmpl">
+    <div class="container">
+        <h2>UpdateView</h2>
+        <br />
+        <form id="UpdateForm"action="/Board/Update"  enctype="multipart/form-data" method="post">
+            <input type="hidden" name="boardId" value="${boardId}" />
+            <table>
+
+                <tr>
+                    <th>제목</th>
+                    <td><input type="text" name="boardTitle" style="width:1000px" value="${boardTitle}" /></td>
+                </tr>
+                <tr>
+                    <th>내용</th>
+                    <td><textarea rows="20" cols="100" id="boardContent" name="boardContent"></textarea></td>
+                </tr>
+                <tr>
+                    <th style="width:5%">아이디</th>
+                    <td><input type="text" name="userId" style="width:1000px" value="${userId}" /></td>
+                </tr>
+                <tr>
+                    <th>첨부파일</th>
+                    <td style="float:left;">
+                        <input type="text" id="fileText" name ="fileName" value="${filePath.substring(filePath.indexOf("-")+1)}" style="width:1000px;" readonly />
+                        <label for="boardFile">
+                            <a></a>파일추가 <input type="file" title="" name="pUpload" id="boardFile" onchange="changeVal()" value="${filePath}" style="display:none;" multiple/>
+                        </label>
+                                            
+                        <button type="button" onclick="removeFile()">파일제거</button>
+                    </td>
+                </tr>
+            </table>
+            <input type="submit" onclick="UpdateSubmit()" value="글 수정"/>
+        </form>
+
+    </div>
+</script>
+    @Html.ActionLink("뒤로가기", "/List")
+    <script type="text/javascript">       
+       
+        $(function () {            
+            init();     
+            
+        });
+        function removeFile() {            
+            $("#fileText").val(''); 
+            //파일값도 사라지게
+            boardFile.Files = null;
+            
+        }
+        function changeVal() {
+            $("#fileText").val($("#boardFile").val().substring(12));
+        };
+
+        function init() {
+            $.ajax({
+                url: "//exerciseCrud.com/Exercise/UpdateView",
+                data: { boardId: boardId },
+                dataType: "JSON",
+                success: function (d) {
+                   
+                    $("#UpdateViewTmpl").tmpl(d).appendTo("#UpdateViewDIV");
+                
+                    oEditors = [];
+
+                    nhn.husky.EZCreator.createInIFrame({
+                        oAppRef: oEditors,
+                        elPlaceHolder: "boardContent",
+                        sSkinURI: "http://exercisecrud.com/dist/SmartEditor2Skin.html",
+                        htParams: {
+                            bUseToolbar: true,
+                            bUseVerticalResizer: true,
+                            bUseModeChanger: true,
+                            fOnBeforeUnload: function () {
+                            }
+                        },
+                        fOnAppLoad: function () {
+                            oEditors.getById["boardContent"].exec("PASTE_HTML", [d.boardContent]);
+                        },
+                        fCreator: "createSEditor2"
+                    });
+                                 
+                }
+            });
+        };
+
+        function UpdateSubmit() {
+           
+            oEditors.getById["boardContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                             
+           $("#UpdateForm").submit();
+            
+           
+
+            /*
+            var formData = $("#UpdateForm").serialize();
+            $.ajax({
+                url: "//exerciseCrud.com/Exercise/Update",
+                data: formData,
+                type: 'POST',
+                success: function (d) {
+                    alert(d);
+                    location.href = "/Board/Detail?boardId="+boardId;
+                },
+                error: function (d) {
+                    alert(d);
+                }
+            });
+            */
+        };
+
+        
+
+    </script>
+

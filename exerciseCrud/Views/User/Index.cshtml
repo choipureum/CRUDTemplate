@@ -1,0 +1,58 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>AdmLogin</title>
+    <script language="javascript">
+        function fncSubmit() {
+            formLogin.submit();
+        }
+    </script>
+</head>
+<body>
+    <div align="center">
+        <table width="300" border="0" cellspacing="0" cellpadding="0">
+            <form method='post' name='formLogin' action='https://member.imbc.com/Login/LoginProcess.aspx'>
+                <tr>
+                    <td><b>Exercise 게시판 로그인</b></td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <table>
+                            <tr align="left">
+                                <td style="padding: 10px 0px 5px 10px">
+                                   아이디: 
+                                </td>
+                                <td style="padding: 10px 0px 5px 10px">
+                                    <input type='text' name='UID' size='15' maxlength='20' style='background-color: #FBFBFB;
+                                   ' onkeydown='javascript:if (event.keyCode == 13) fncSubmit();' />
+                                </td>
+                            </tr>
+                            <tr align="left">
+                                <td colspan="2" background="http://img.imbc.com/broad/caption/images/login_ul.gif" ></td>
+                            </tr>
+                            <tr align="left">
+                                <td style="padding: 5px 0px 10px 10px">
+                                   비번: 
+                                </td>
+                                <td style="padding: 5px 0px 10px 10px">
+                                    <input type='password' name='PASSWORD' size='16' maxlength='13' style='background-color: #FBFBFB;'
+                                   onkeydown='javascript:if (event.keyCode == 13) fncSubmit();' />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="100%" align="center" style="padding: 10px 0px 10px 0px">
+                        <!--확인버튼-->
+                        <input type="button" onclick="fcnSubmit()" value="로그인"/>
+                    </td>
+                </tr>
+            </form>
+        </table>
+    </div>
+</body>
+</html>

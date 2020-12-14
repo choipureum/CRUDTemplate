@@ -1,0 +1,343 @@
+﻿@model exerciseCrud.Models.BoardInfo
+
+@{
+    ViewBag.Title = "Write";
+}
+
+<h2>Write</h2>
+<form id="dropzone" name="dropzone" enctype="multipart/form-data" method="POST">
+    <input name="uploadedFile" type="hidden" id="uploadedFile" />
+    <table>
+        <tr>
+            <th style="width:5%">아이디</th>
+            <td><input type="text" name="userId" id="userId"style="width:1000px" /></td>
+        </tr>
+        <tr>
+            <th>제목</th>
+            <td><input type="text" name="boardTitle" id="boardTitle"style="width:1000px" /></td>
+        </tr>
+        <tr>
+            <th>내용</th>
+            <td><textarea id="boardContent" name="boardContent" cols="100" rows="20"></textarea></td>
+        </tr>
+        <tr id="wFileTr2" class="file_input">
+            <td colspan="2">
+                <div id="dropZone" style="width:50%" class="dropzone">      
+                    <span>첨부파일을 추가하거나 드래그해주세욤</span>
+                    <input  type="file" name="pUpload" id="pUpload" multiple="multiple" style="display:none;" />
+
+                    <!-- 파일 리스트 테이블  -->
+                    <table class="input_table" id="fileListTable" style="display:none; width:50%">
+                        <caption class="blind">파일 목록</caption>
+
+                        <colgroup>
+                            <col width="10%">
+                            <col width="75%">
+                            <col width="15%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col"><span class="blind">삭제</span></th>
+                                <th scope="col">파일명</th>
+                                <th scope="col">용량</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileTableTbody"></tbody>
+                    </table>
+                </div>
+              
+            </td>
+        </tr>
+       
+    </table>
+    <br />
+    <p>
+        <input type="button" onclick="WriteSubmit();" value="글작성" />
+    </p>
+</form>
+
+
+<div>
+    @Html.ActionLink("돌아가기", "/List")
+</div>
+<script>
+   
+</script>
+
+<!--SamrtEditor 2.0-->
+
+<script type="text/javascript">
+    // 파일 리스트 번호
+    var fileIndex = 0;
+    // 등록할 전체 파일 사이즈
+    var totalFileSize = 0;
+    // 등록할 전체 파일 카운트
+    var totalFileCount = 0;
+    // 파일 리스트
+    var fileList = new Array();
+    // 파일 사이즈 리스트
+    var fileSizeList = new Array();
+    // 등록 가능한 파일 사이즈 MB
+    var uploadSize = 90000;
+    // 등록 가능한 총 파일 사이즈 MB
+    var maxUploadSize = 500;
+    // 등록 가능한 파일 갯수
+    var maxUploadCount = 1;
+
+
+    var oEditors = [];
+    
+
+    $(document).ready(function () {
+        nhn.husky.EZCreator.createInIFrame({
+            oAppRef: oEditors,
+            elPlaceHolder: "boardContent",
+            sSkinURI: "http://exercisecrud.com/dist/SmartEditor2Skin.html",
+            htParams: {
+                bUseToolbar: true,
+                bUseVerticalResizer: true,
+                bUseModeChanger: true,
+                fOnBeforeUnload: function () {
+                }
+            },
+            fCreator: "createSEditor2"
+        });
+        $('#pUpload').bind('change', function () {
+            selectFile(this.files);
+
+        });
+    });
+        
+
+    function WriteSubmit() {
+        //에디터 내용 textarea적용 필요 
+        oEditors.getById["boardContent"].exec("UPDATE_CONTENTS_FIELD", []);
+
+        var w_title = $("#boardTitle").val();
+        var w_contents = oEditors.getById["boardContent"].getIR();
+        var w_userId = $("#userId").val();
+
+        if (w_title == "") {
+            alert("제목을 입력해 주세요.");
+            document.getElementById("boardTitle").focus();
+            document.getElementById("boardTitle").select();
+            return false;
+        }
+        //null값 or 에디터 기본 html값
+        if (w_contents == "" || w_contents == "<p><br></p>") {
+            alert("내용을 입력해 주세요.");
+            oEditors.getById["boardContent"].exec("FOCUS");
+            return false;
+        }
+        if (w_userId == "") {
+            alert("아이디를 입력해 주세요.");
+            oEditors.getById["userId"].exec("FOCUS");
+            return false;
+        }
+        // 등록할 파일 리스트
+        
+        if (confirm("등록 하시겠습니까?")) {
+            $('#pUpload').files = fileList[0];
+            console.log($('#pUpload').files);
+            //등록할 파일 리스트를 formData로 데이터 입력
+
+            //var form = $('#dropzone');
+            //var formData =new FormData(form[0]);
+            var formData = new FormData();   
+
+            var formData = {
+                'boardTitle': $('#boardTitle').val(),
+                'boardContent': $('#boardContent').val(),
+                'userId': $('#userId').val(),
+                'pUpload': fileList[0]
+            };
+
+
+          
+            console.log(fileList[0]);
+            console.log(formData);
+            
+            $.ajax({
+                url: "//exerciseCrud.com/Board/WriteUpload",
+                data: formData,
+                type: 'POST',
+                processData: false,
+                enctype: 'multipart/form-data',
+                dataType: 'json',
+                cache: false,
+                success: function (d) {
+
+                    alert(d);
+                    location.href = "/Board/List";
+                },
+                error: function (d) {
+                    alert(d);
+                }
+            });
+
+        }
+    };
+    //-------------------------------------------------
+
+   
+
+    $(function () {
+        // 파일 드롭 다운
+        fileDropDown();
+    });
+
+    // 파일 드롭 다운
+    function fileDropDown() {
+        var dropZone = $("#dropZone");
+        //Drag기능 
+        dropZone.on('dragenter', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            // 드롭다운 영역 css
+            dropZone.css('background-color', '#E3F2FC');
+        });
+        dropZone.on('dragleave', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            // 드롭다운 영역 css
+            dropZone.css('background-color', '#fdfaf8');
+        });
+        dropZone.on('dragover', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            // 드롭다운 영역 css
+            dropZone.css('background-color', '#E3F2FC');
+        });
+        dropZone.on('drop', function (e) {
+            e.preventDefault();
+            // 드롭다운 영역 css
+            dropZone.css('background-color', '#fdfaf8');
+
+            var files = e.originalEvent.dataTransfer.files;
+            if (files != null) {
+                if (files.length < 1) {
+                    /* alert("폴더 업로드 불가"); */
+                    console.log("폴더 업로드 불가");
+                    return;
+                } else {
+                    selectFile(files)
+                }
+            } else {
+                alert("ERROR");
+            }
+        });
+    }
+        // 파일 선택시
+    function selectFile(fileObject) {
+        var files = null;
+        files = fileObject;
+        console.log(files);
+            // 다중파일 등록
+            if (files != null) {
+
+                for (var i = 0; i < files.length; i++) {
+                    if ((totalFileCount + 1) > maxUploadCount) {
+                        alert("업로드 허용 파일 갯수를 초과하였습니다.(" + maxUploadCount + "개)");
+                        break;
+                    }
+                    var fileName = files[i].name;
+
+                    var fileNameArr = fileName.split("\.");
+                    // 확장자
+                    var ext = fileNameArr[fileNameArr.length - 1];
+
+                    var fileSize = files[i].size; // 파일 사이즈(단위 :byte)
+                    console.log("fileSize=" + fileSize);
+                    if (fileSize <= 0) {
+                        console.log("0kb file return");
+                        return;
+                    }
+
+                    var fileSizeKb = fileSize / 1024; // 파일 사이즈(단위 :kb)
+                    var fileSizeMb = fileSizeKb / 1024;    // 파일 사이즈(단위 :Mb)
+
+                    var fileSizeStr = "";
+                    console.log("fileSizeKb=" + parseInt(fileSizeKb));
+                    fileSizeStr = parseInt(fileSizeKb) + " kb";
+
+                   if (fileSizeKb > uploadSize) {
+                        // 파일 사이즈 체크
+                        alert("파일 용량이 초과되었습니다.(" + Math.ceil(fileSizeKb) + "KB / " + uploadSize + "KB)");
+                        break;
+                    } else {
+                        // 전체 파일 사이즈
+                        totalFileSize += fileSizeMb;
+                        // 전체 파일 카운트
+                        totalFileCount += 1;
+
+                        // 파일 배열에 넣기
+                        fileList[0] = files[i];
+                     
+                        // 파일 사이즈 배열에 넣기
+                        fileSizeList[0] = fileSizeMb;
+
+                        // 업로드 파일 목록 생성
+                        addFileList(0, fileName, fileSizeStr);
+
+                        // 파일 번호 증가
+                        //fileIndex++;
+                    }
+                }
+              
+                if (totalFileCount > 0) {
+                    $("#fileListTable").show();
+                } else {
+                    $("#fileListTable").hide();
+                }
+            } else {
+                alert("ERROR");
+            }
+    }
+        // 업로드 파일 목록 생성
+        function addFileList(fIndex, fileName, fileSizeStr) {
+            /* if (fileSize.match("^0")) {
+                alert("start 0");
+            } */
+
+            var html = "";
+            html += "<tr id='fileTr_" + fIndex + "'>";
+            html += "    <td class='txt_left'><button type='button' class='btn btn_delete' onclick='deleteFile(" + fIndex + "); return false;'>삭제</button></td>";
+            html += "    <td>" + fileName + "</td>";
+            html += "    <td>" + fileSizeStr + "</td>";
+            html += "</tr>";
+
+            $('#fileTableTbody').append(html);
+        }
+
+        // 업로드 파일 삭제
+        function deleteFile(fIndex) {
+            console.log("deleteFile.fIndex=" + fIndex);
+            // 전체 파일 사이즈 수정
+            totalFileSize -= fileSizeList[fIndex];
+            // 전체 파일 카운트
+            totalFileCount -= 1;
+
+            // 파일 배열에서 삭제
+            delete fileList[0];
+
+            // 파일 사이즈 배열 삭제
+            delete fileSizeList[fIndex];
+
+            // 업로드 파일 테이블 목록에서 삭제
+            $("#fileTr_" + 0).remove();
+
+            if (totalFileSize > 0) {
+                $("#fileListTable").show();
+            } else {
+                $("#fileListTable").hide();
+            }
+        };
+
+</script>
+
+<style>
+    table {width:2000px;}
+</style>
+
+
+

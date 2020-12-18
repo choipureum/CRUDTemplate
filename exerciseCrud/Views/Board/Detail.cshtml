@@ -42,7 +42,7 @@
                 {{if filePath == ''}}
                 <dd>첨부파일이 없습니다!</dd>
                 {{else}}
-                <dd><a href="${filePath.substring(filePath.indexOf("\Upload"))}" name="pUpload" id="pUpload" download>${filePath.substring(filePath.indexOf("-")+1)}</a></dd>
+                <dd><a href="${filePath.substring(filePath.indexOf(" \Upload"))}" name="pUpload" id="pUpload" download>${filePath.substring(80)}</a></dd>
                 {{/if}}
             </dl>
         </div>

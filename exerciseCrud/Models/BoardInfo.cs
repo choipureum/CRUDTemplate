@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace exerciseCrud.Models
 {
@@ -10,6 +11,7 @@ namespace exerciseCrud.Models
     {
         public int boardId { get; set; }
         public string boardTitle { get; set; }
+        [AllowHtml]
         public string boardContent { get; set; }
         public DateTime regDate { get; set; }
         public int viewCount { get; set; }

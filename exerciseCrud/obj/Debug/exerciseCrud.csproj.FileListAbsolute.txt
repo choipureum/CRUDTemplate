@@ -49,6 +49,7 @@ D:\wwwroot\exerciseCrud\exerciseCrud\bin\roslyn\VBCSCompiler.exe
 D:\wwwroot\exerciseCrud\exerciseCrud\bin\roslyn\VBCSCompiler.exe.config
 D:\wwwroot\exerciseCrud\exerciseCrud\bin\Antlr3.Runtime.dll
 D:\wwwroot\exerciseCrud\exerciseCrud\bin\IMBC.FW.dll
+D:\wwwroot\exerciseCrud\exerciseCrud\bin\InMemoryMultipartFormDataStreamProvider.dll
 D:\wwwroot\exerciseCrud\exerciseCrud\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 D:\wwwroot\exerciseCrud\exerciseCrud\bin\Microsoft.Web.Infrastructure.dll
 D:\wwwroot\exerciseCrud\exerciseCrud\bin\Newtonsoft.Json.dll

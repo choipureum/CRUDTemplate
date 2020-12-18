@@ -57,129 +57,109 @@ namespace exerciseCrud.Controllers
             ViewBag.boardId = boardId;
             return View();
         }
-        /*
-
+        
+        
+        
+        
+        
         [HttpPost]
         [ValidateInput(false)]
-        public ActionResult Write(BoardInfo info)
+        public string WriteUpload()
         {
-                 
-            if (info.pUpload != null)
-            {
-                string FileName = Path.GetFileNameWithoutExtension(info.pUpload.FileName);
-                string FileExtension = Path.GetExtension(info.pUpload.FileName);
-                FileName = DateTime.Now.ToString("yyyyMMdd") + "-" + FileName.Trim() + FileExtension;
-                string UploadPath = ConfigurationManager.AppSettings["FilePath"].ToString();
-                info.filePath = UploadPath + FileName;
-                info.pUpload.SaveAs(info.filePath);
-            }
-
-            if (new BoardBiz().RegisterBoardInfo(info))
-            {
-                ViewBag.message = "글작성 성공";
-                return RedirectToAction("List", "Board");
-            }
-            return RedirectToAction("Write", "Board");
-        }
-        */
-        [HttpPost]
-        [ValidateInput(false)]
-        public ActionResult WriteUpload(BoardInfo info)
-        {
-           
+            BoardInfo info = new BoardInfo();
             bool isSavedSuccessfully = true;
-            string fName = "";
+            int fileCnt = 0;
+            fileCnt = Request.Files.Count;
             try
             {
-                HttpPostedFileBase file = Request.Files["files"];
-                //Save file content goes here
-                fName = file.FileName;
-
-
-                if (file != null)
-                {                   
+                if (fileCnt > 0)
+                {
+                    var file = Request.Files[1];
                     string FileName = Path.GetFileNameWithoutExtension(file.FileName);
                     string FileExtension = Path.GetExtension(file.FileName);
                     FileName = DateTime.Now.ToString("yyyyMMdd") + "-" + FileName.Trim() + FileExtension;
                     string UploadPath = ConfigurationManager.AppSettings["FilePath"].ToString();
-                    info.filePath= UploadPath + FileName;
-                    info.pUpload.SaveAs(info.filePath);
+                    info.filePath = UploadPath + FileName;
+                    file.SaveAs(info.filePath);
                 }
             }
-
-            catch(Exception)
+            catch (Exception)
             {
                 isSavedSuccessfully = false;
             }
-            info.boardTitle = Request.Form["boardTitle"];
-            info.boardContent = Request.Form["boardContent"];
+           
+            info.boardTitle = Request.Form["boardTitle"];           
             info.userId = Request.Form["userId"];
+            info.boardContent = Request.Form["boardContent"];
 
-            
+
             if (isSavedSuccessfully && new BoardBiz().RegisterBoardInfo(info))
             {
-                return Json(new { msg = "OK" });
+                return "성공!";
             }
             else
             {
-                return Json(new { msg = "Error in saving file" });
+                return "실패!";
             }
 
         }
        
 
-
-
-       
 
         [HttpPost]
         [ValidateInput(false)]
-        public ActionResult Update(BoardInfo info)
+        public string Update()
         {
-            string fileName=Request.Form["fileName"];
-
-            //값이 존재할때(보통)
-            if (info.pUpload != null && !(fileName =="" || fileName==null))
+           
+            BoardInfo info = new BoardInfo();
+            int fileCnt = 0;
+            fileCnt = Request.Files.Count;
+            string filePath = Request.Form["filePath"];
+            try
             {
-                //기존 파일삭제 해야함
-                if (Util.DeleteFile(info.boardId))
-                {
+                info.boardTitle = Request.Form["boardTitle"];
+                info.userId = Request.Form["userId"];
+                info.boardContent = Request.Form["boardContent"];
+                info.boardId = Int32.Parse( Request.Form["boardId"]);
 
-                    string FileName = Path.GetFileNameWithoutExtension(info.pUpload.FileName);
-                    string FileExtension = Path.GetExtension(info.pUpload.FileName);
+                //파일존재
+                if (fileCnt > 1 && !(filePath=="" || filePath==null ))
+                {
+                    var file = Request.Files[1];
+                    string FileName = Path.GetFileNameWithoutExtension(file.FileName);
+                    string FileExtension = Path.GetExtension(file.FileName);
                     FileName = DateTime.Now.ToString("yyyyMMdd") + "-" + FileName.Trim() + FileExtension;
                     string UploadPath = ConfigurationManager.AppSettings["FilePath"].ToString();
                     info.filePath = UploadPath + FileName;
-                    info.pUpload.SaveAs(info.filePath);
-
+                    file.SaveAs(info.filePath);
                 }
-            }
-
-            //파일 고대로 보존
-            else if(info.pUpload == null && !(fileName == "" || fileName == null))
-            {
-                //기존파일 삭제하지 않음
-                info.filePath = fileName;
-            }
-            //파일 삭제
-            else if (fileName == "" || fileName == null)
-            {
-                //기존 파일삭제 해야함
-                if (Util.DeleteFile(info.boardId))
+                //파일없을때
+                //파일고대로
+                else if( !(filePath == "" || filePath == null))
                 {
-                    info.filePath = "";
+                    info.filePath = ConfigurationManager.AppSettings["FilePath"].ToString()+filePath;
                 }
-  
+                //파일 제거만했을때
+                else 
+                {
+                    if (Util.DeleteFile(info.boardId))
+                    {
+                        info.filePath = "";
+                    }
+                }
             }
+
+            catch (Exception){}
 
             if (new BoardBiz().UpdateBoardInfo(info))
             {
-                ViewBag.Message = "업데이트성공";
+               
                 info=new BoardBiz().RetrieveBoardInfo(info.boardId);
-                return RedirectToAction("List", "Board");
+                return "/Board/Detail?boardId=" + info.boardId;
             }
-            return RedirectToAction("List", "Board");
+            return "/Board/List";
         }
+
         /*
            public ActionResult Delete(int boardId=0)
            {
@@ -191,11 +171,6 @@ namespace exerciseCrud.Controllers
                return RedirectToRoute("/Board/Detail?" + boardId);
            }
 
-
-
-
-
-           
 
            [HttpGet]
            public int UpdateRecommendUp(int boardId)

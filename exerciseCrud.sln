@@ -22,4 +22,11 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {734D9298-5C2A-4A7C-8B01-32EEA0C4826B}
 	EndGlobalSection
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 2
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = exerciseCrud\\exerciseCrud.csproj
+		SccLocalPath1 = .
+		SccProjectFilePathRelativizedFromConnection1 = exerciseCrud\\
+	EndGlobalSection
 EndGlobal

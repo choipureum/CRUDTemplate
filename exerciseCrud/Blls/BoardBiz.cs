@@ -21,7 +21,7 @@ namespace exerciseCrud.Blls
         public BoardInfo RetrieveBoardInfo(int boardId)
         {
 
-            // 조회수+1
+            // 상세정보 조회수+1
             if (_dal.ViewCountUp(boardId))
             {
                 return _dal.RetrieveBoardInfo(boardId);
@@ -37,17 +37,24 @@ namespace exerciseCrud.Blls
         {
             return _dal.UpdateBoardInfo(info);
         }
-        public bool UpdateRecommendUp(int boardId)
+        public bool RegisterBoardFile(List<Boardfile> file, int boardId)
         {
-            return _dal.UpdateRecommendUp(boardId);
+            return _dal.RegisterBoardFile(file, boardId);
         }
-        public List<BoardComment> RetrieveBoardComment(int boardId)
+        public int RetrieveBoardFileCount(int boardId)
         {
-            return _dal.RetrieveBoardComment(boardId);
+            return _dal.RetrieveBoardFile(boardId).Count;
         }
-        public bool RegisterBoardComment(BoardComment info)
+        public bool DeleteBoardFile(int fileId)
         {
-            return _dal.RegisterBoardComment(info);
+            //DB && 서버 파일삭제
+            if (Util.DeleteFile(fileId) && _dal.DeleteBoardFile(fileId))
+            {
+                return true;
+            }
+            return false;
         }
+
+
     }
 }

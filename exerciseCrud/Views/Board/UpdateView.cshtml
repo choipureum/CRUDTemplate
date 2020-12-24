@@ -13,10 +13,9 @@
     <div class="container">
         <h2>UpdateView</h2>
         <br />
-        <form id="dropzone" action="/Board/Update"  enctype="multipart/form-data" method="post">
+        <form id="dropzone" enctype="multipart/form-data">
             <input type="hidden" name="boardId" value="${boardId}" />
-
-
+            
             <table>
 
                 <tr>
@@ -35,8 +34,7 @@
                     <td colspan="2">
                         <div id="dropZone" style="width:100%" class="dropzone">
                             <span>첨부파일을 추가하거나 드래그해주세욤</span>
-                            <input type="file" name="pUpload" id="pUpload" multiple="multiple" style="display:none;" />
-                            <input type="text" id="fileText" name="filePath" value="${filePath}" style="width:1000px;" readonly />
+                            <input type="file" id="wFileInput" multiple="multiple" style="display:none;" />
                             <!-- 파일 리스트 테이블  -->
                             <table class="input_table" id="fileListTable" style="display:none; width:50%">
 
@@ -54,20 +52,30 @@
                                         <th scope="col">용량</th>
                                     </tr>
                                 </thead>
-                                <tbody id="fileTableTbody"></tbody>
+                                <tbody id="fileTableTbody">
+                                    <!--기존파일-->
+                                    {{each(i,item) BoardFileList}}
+                                    <tr id="fileTr_${i}">
+                                        <td class="txt_left"><button type='button' class='btn btn_delete' onclick='deleteFile("${i}", "${item.fileId}"); return false;'>삭제</button></td>
+                                        <td>${item.fileName}</td>
+                                        <td><input type="hidden" name="oFile_${i}" value="${item.fileId}" /> ${item.fileId} </td>
+                                    </tr>
+                                    {{/each}}
+                                    <!--신규파일은 밑에추가-->
+                                </tbody>
                             </table>
                         </div>
 
                     </td>
                 </tr>
             </table>
-            <input type="submit" onclick="UpdateSubmit()" value="글 수정"/>
+            <input type="button" onclick="UpdateSubmit()" value="글 수정" />
         </form>
 
     </div>
 </script>
     @Html.ActionLink("뒤로가기", "/List")
-
+    
     <script type="text/javascript">       
         // 파일 리스트 번호
         var fileIndex = 0;
@@ -84,33 +92,41 @@
         // 등록 가능한 총 파일 사이즈 MB
         var maxUploadSize = 500;
         // 등록 가능한 파일 갯수
-        var maxUploadCount = 1;
+        var maxUploadCount = 15;
+        // 원본 파일 삭제 리스트
+        var dfileList = new Array();
 
-        $(function () {  
-            
-            init();  
+        $(function () {
+            init();
            
-            
+        });
+
+        $(document).on('bind', '#wFileInput', function () {
+            selectFile(this.files);
         });
       
         function init() {
+            
             $.ajax({
                 url: "//exerciseCrud.com/Exercise/UpdateView",
                 data: { boardId: boardId },
                 dataType: "JSON",
                 success: function (d) {
-                   
                     $("#UpdateViewTmpl").tmpl(d).appendTo("#UpdateViewDIV");
-                    if ($("#fileText").val().length>1) {                       
-                        totalFileSize = 1;   
-                        totalFileCount++;
-                        $("#fileListTable").show();
-                        addFileList(0, d.filePath.substring(d.filePath.indexOf('Upload')+16), "10");
+                    //file개수가 1이상일때
+                    if (d.BoardFileList.length > 0) {
+                        for (var i = 0; i < d.BoardFileList.length; i++){                           
+                            totalFileCount += d.BoardFileList.length;                                                       
+                            fileIndex += d.BoardFileList.length;
+                            if (totalFileCount > 0) {
+                                $("#fileListTable").show();
+                            } 
+                        }                      
                     }
-
+                   
                     fileDropDown();
 
-
+                    //스마트에디터2.0
                     oEditors = [];
 
                     nhn.husky.EZCreator.createInIFrame({
@@ -127,9 +143,10 @@
                         fOnAppLoad: function () {
                             oEditors.getById["boardContent"].exec("PASTE_HTML", [d.boardContent]);
                         },
-                        fCreator: "createSEditor2"
+                        fCreator: "createSEditor2",
+
                     });
-                                 
+                                                                  
                 }
             });
 
@@ -140,6 +157,7 @@
             //에디터 내용 textarea적용 필요 
             oEditors.getById["boardContent"].exec("UPDATE_CONTENTS_FIELD", []);
 
+            //유효성검사
             var w_title = $("#boardTitle").val();
             var w_contents = oEditors.getById["boardContent"].getIR();
             var w_userId = $("#userId").val();
@@ -161,20 +179,26 @@
                 oEditors.getById["userId"].exec("FOCUS");
                 return false;
             }
-            // 등록할 파일 리스트
+
 
             if (confirm("등록 하시겠습니까?")) {
-                //등록할 파일 리스트를 formData로 데이터 입력
-
+                // formData 구성
                 var form = $('#dropzone');
                 var formData = new FormData(form[0]);
-                for (var i = 0; i < uploadFileList.length; i++) {
-                    formData.append('file', fileList[uploadFileList[i]]);
+                formData.append('dFileCnt', dfileList.length);
+                for (var i = 0; i < dfileList.length; i++) {
+                    formData.append('dFile' + (i + 1), dfileList[i]);
                 }
+                for (var i = 0; i < uploadFileList.length; i++) {
+                    formData.append('file' + (i + 1), fileList[uploadFileList[i]]);
+                }
+                              
+                console.log(form);
+                console.log(formData);
               
 
                 $.ajax({
-                    url: "//exerciseCrud.com/Board/Update",
+                    url: "//exerciseCrud.com/Exercise/UpdateUpload",
                     data: formData,
                     type: 'POST',
                     processData: false,
@@ -183,13 +207,16 @@
                     cache: false,
                     success: function (d) {
                         alert("수정성공");
-                        location.href = d;
+                        location.href = "/Board/List";
                     },
                     error: function (d) {  
                         alert("오류");
-                        location.href = d;
+                        location.href = "/Board/List";
+                        
                     }
                 });
+
+                return false;
 
             };
         };

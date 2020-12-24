@@ -39,22 +39,24 @@
                 <dd>${userId}</dd>
 
                 <dt>첨부파일</dt>
-                {{if filePath == ''}}
+                {{if BoardFileList.Count <1}}
                 <dd>첨부파일이 없습니다!</dd>
                 {{else}}
-                <dd><a href="${filePath.substring(filePath.indexOf(" \Upload"))}" name="pUpload" id="pUpload" download>${filePath.substring(80)}</a></dd>
+                    {{each(i,item) BoardFileList}}
+                <dd><a href="${item.filePath.substring(item.filePath.indexOf("/Upload")+37)}" id="wInputFile" download="download">${item.fileName}</a></dd>
+                    {{/each}}
                 {{/if}}
             </dl>
         </div>
-        <hr />
-        <h4>댓글란</h4>
-
+      
     </script>
 
 
 <script type="text/javascript">
+
+    //삭제
     function deleteBoard() {
-        //삭제
+        
         $.ajax({
             url: "//exerciseCrud.com/Exercise/Delete/"+boardId,
             success: function (d) {
@@ -83,20 +85,14 @@
 
     function init() {
         
-        //init() - 자동조회수업+ 데이터GET
+        //init() - 자동조회+ 데이터GET
         $.ajax({
             url: "//exerciseCrud.com/Exercise/Detail/"+boardId,         
             success: function (d) {
                 $("#DetailTmpl").tmpl(d).appendTo("#DetailDIV");
-                /*
-                var template = document.getElementById("content");
-                var html = d.boardContent;
-                console.log(html);
-                template.insertAdjacentElement('beforeend',html);
-                */
-              
+                          
                 var template = document.createElement('p');
-                // innerHTML을 사용하여 text를 html로 파싱 후 자식노드로 추가            
+                // innerHTML을 사용하여 text를 html로 파싱 후 자식노드로 추가         
                 template.innerHTML = d.boardContent;            
                 document.getElementById("content").append(template);
                 

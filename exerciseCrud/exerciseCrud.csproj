@@ -25,6 +25,10 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -137,18 +141,14 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Blls\BoardBiz.cs" />
-    <Compile Include="Blls\UserBiz.cs" />
     <Compile Include="Blls\Util.cs" />
     <Compile Include="Controllers\ExerciseApiController.cs" />
     <Compile Include="Controllers\BoardController.cs" />
-    <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Dals\BoardDals.cs" />
-    <Compile Include="Dals\UserDals.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\BoardInfo.cs" />
-    <Compile Include="Models\UserInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -275,7 +275,6 @@
     <Content Include="Views\Board\Write.cshtml" />
     <Content Include="Views\Board\Detail.cshtml" />
     <Content Include="Views\Board\UpdateView.cshtml" />
-    <Content Include="Views\User\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

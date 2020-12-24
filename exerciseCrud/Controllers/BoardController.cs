@@ -15,7 +15,11 @@ namespace exerciseCrud.Controllers
 {
     public class BoardController : Controller
     {
-        
+        /// <summary>
+        /// LIST호출
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
         public ActionResult List(int page=1)
         {
             //받을 객체생성
@@ -37,20 +41,32 @@ namespace exerciseCrud.Controllers
             ViewBag.page = page;        
             return View(list);
         }
-
+        /// <summary>
+        /// 작성페이지뷰
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public ActionResult Write()
         {
             return View();
         }
 
-        
+        /// <summary>
+        /// 상세페이지뷰
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <returns></returns>
         [HttpGet]
         public ActionResult Detail(int boardId=0)
         {
             ViewBag.boardId = boardId;
             return View();       
         }
+        /// <summary>
+        /// 수정페이지뷰
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <returns></returns>
         [HttpGet]
         public ActionResult UpdateView(int boardId)
         {
@@ -59,53 +75,10 @@ namespace exerciseCrud.Controllers
         }
         
         
-        
-        
-        
-        [HttpPost]
-        [ValidateInput(false)]
-        public string WriteUpload()
-        {
-            BoardInfo info = new BoardInfo();
-            bool isSavedSuccessfully = true;
-            int fileCnt = 0;
-            fileCnt = Request.Files.Count;
-            try
-            {
-                if (fileCnt > 0)
-                {
-                    var file = Request.Files[1];
-                    string FileName = Path.GetFileNameWithoutExtension(file.FileName);
-                    string FileExtension = Path.GetExtension(file.FileName);
-                    FileName = DateTime.Now.ToString("yyyyMMdd") + "-" + FileName.Trim() + FileExtension;
-                    string UploadPath = ConfigurationManager.AppSettings["FilePath"].ToString();
-                    info.filePath = UploadPath + FileName;
-                    file.SaveAs(info.filePath);
-                }
-            }
-            catch (Exception)
-            {
-                isSavedSuccessfully = false;
-            }
-           
-            info.boardTitle = Request.Form["boardTitle"];           
-            info.userId = Request.Form["userId"];
-            info.boardContent = Request.Form["boardContent"];
-
-
-            if (isSavedSuccessfully && new BoardBiz().RegisterBoardInfo(info))
-            {
-                return "성공!";
-            }
-            else
-            {
-                return "실패!";
-            }
-
-        }
+       /*
        
-
-
+        // 단순 MVC형태 -API(X)
+        
         [HttpPost]
         [ValidateInput(false)]
         public string Update()
@@ -159,6 +132,7 @@ namespace exerciseCrud.Controllers
             }
             return "/Board/List";
         }
+        */
 
         /*
            public ActionResult Delete(int boardId=0)

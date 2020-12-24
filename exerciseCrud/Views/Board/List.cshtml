@@ -9,11 +9,11 @@
 
 <div id="MainDIV"></div>
 <div class="container">
-    
+
     <p><span style="color:red;font-size:x-large">@Model.TotalCnt</span> 개의 글</p>
 
     <div class="rgst_btn">
-        <input class="btn-danger" type="button" value="              글 작 성 버 튼              " onclick="registerBoard()" ><br />
+        <input class="btn-danger" type="button" value="  글 작 성 버 튼 " onclick="registerBoard()"><br />
         <br />
     </div>
     <table class="table">
@@ -23,7 +23,6 @@
             <th>등록일</th>
             <th>등록자</th>
             <th>조회수</th>
-            <th>추천수</th>
         </tr>
 
         @if (Model.TotalCnt < 1)
@@ -32,15 +31,14 @@
         }
         else
         {
-            foreach (var item in Model.list)
+            foreach (var item in Model.list.Select((value, i) => new { i, value }))
             {
-                <tr style="cursor:pointer" onclick="detailBoard(@item.boardId)">
-                    <td>@item.boardId</td>
-                    <td><a href="">@item.boardTitle</a></td>
-                    <td>@item.regDate.ToShortDateString()</td>
-                    <td>@item.userId</td>
-                    <td>@item.viewCount</td>
-                    <td>@item.recommend</td>
+                <tr style="cursor:pointer" onclick="detailBoard(@item.value.boardId)">
+                    <td>@(Model.TotalCnt-((ViewBag.page-1)*10) -item.i)</td>
+                    <td><a href="">@item.value.boardTitle</a></td>
+                    <td>@item.value.regDate.ToShortDateString()</td>
+                    <td>@item.value.userId</td>
+                    <td>@item.value.viewCount</td>
                 </tr>
             };
         }
@@ -48,7 +46,7 @@
 
     </table>
     <div><ul class="pagination"></ul></div>
-   
+
 
 </div>
 
@@ -57,40 +55,40 @@
     $(function () {
         paging();
     });
-    
-    function paging() {     
+
+    // 프론트에서 해보는 페이징
+    function paging() {
         pageSize = 10;
 
-        totalPages = Math.ceil(@Model.TotalCnt/pageSize);     
-        currentPage = @ViewBag.page;      
+        totalPages = Math.ceil(@Model.TotalCnt/pageSize);
+        currentPage = @ViewBag.page;
         startPage = currentPage - 5;
         endPage = currentPage + 4;
         if (startPage <= 0) {
             endPage -= (startPage - 1);
             startPage = 1;
         }
-        
+
         if (endPage > totalPages) {
             endPage = totalPages;
             if (endPage > 10) {
                 startPage = endPage - 9;
             }
         }
-       
-        //페이징처리
+
         if (endPage > 1) {
             SetPagination(totalPages, currentPage, startPage, endPage);
         }
     };
-    
-    function SetPagination(totalPages, currentPage, startPage, endPage) {  
-        
+
+    function SetPagination(totalPages, currentPage, startPage, endPage) {
+
         if (currentPage > 1) {
             $(".pagination").append("<li><a href=\"/Board/List\"><<</li>");
             $(".pagination").append("<li><a href=\"/Board/List?page="+(currentPage-1)+"\"><</li>");
         };
-       
-        for (var page = startPage; page <= endPage; page++) {        
+
+        for (var page = startPage; page <= endPage; page++) {
             var cur = "";
             if(page== currentPage) { cur = 'active' };
             $(".pagination").append("<li class=\"" + cur+ "\"> <a href=\"/Board/List?page=" + page+ "\">"+page+"</li>");
@@ -104,6 +102,39 @@
 
 
 </script>
+<script type="text/javascript">
+    //버튼
+
+    //글작성뷰
+    function registerBoard() {
+        location.href = "/Board/Write";
+    }
+    //상세뷰
+    function detailBoard(boardId) {
+        location.href = "/Board/Detail?boardId=" + boardId;
+    }
+
+    //API 버전
+    @* $(function () {
+        init();
+    });
+
+    function init() {
+        $.ajax({
+            url: "//exerciseCrud.com/Exercise/List/" +@ViewBag.page,
+        success: function (d) {
+            console.log(d);
+            $("#ListTmpl").tmpl(d).appendTo("#MainDIV");
+        }
+    });
+    };*@
+
+</script>
+<style>
+    tr:not(:first-child):hover {
+        background: #cc9696;
+    }
+</style>
 
 
 
@@ -186,38 +217,3 @@
 
 </script>
     -->
-
-
-<script type="text/javascript">
-    //API 버전
-    @*$(function () {
-        init();
-    });
-
-    function init() {
-        $.ajax({
-            url: "//exerciseCrud.com/Exercise/List/"+@ViewBag.page,
-            success: function (d) {
-                console.log(d);
-                $("#ListTmpl").tmpl(d).appendTo("#MainDIV");
-            }
-        });
-    };*@
-
-
-    function registerBoard() {
-        location.href = "/Board/Write";
-    }
-    function detailBoard(boardId) {
-        location.href = "/Board/Detail?boardId=" + boardId;
-    }
-
-
-</script>
-<style>
-    tr:not(:first-child):hover {
-        background: #cc9696;
-    }
-</style>
-
-

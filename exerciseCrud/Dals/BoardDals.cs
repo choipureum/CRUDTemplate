@@ -53,9 +53,7 @@ namespace exerciseCrud.Dals
                                 boardContent = reader["boardContent"].ToString(),
                                 regDate = (DateTime)reader["regDate"],                               
                                 viewCount = (int)reader["viewCount"],
-                                userId = reader["userId"].ToString(),
-                                recommend = (int)reader["recommend"],
-                                filePath = reader["filePath"].ToString(),
+                                userId = reader["userId"].ToString()
                             });
                         }                      
                     }
@@ -77,19 +75,54 @@ namespace exerciseCrud.Dals
         /// <returns></returns>
         public bool RegisterBoardInfo(BoardInfo info)
         {
+                
             SqlCommand sqlCmd = new SqlCommand
             {
                 CommandText = "Exercise@RegisterBoardInfo",
                 CommandType = CommandType.StoredProcedure
-            };         
-            sqlCmd.Parameters.Add("@board_title", SqlDbType.VarChar).Value = info.boardTitle;
-            sqlCmd.Parameters.Add("@board_content", SqlDbType.VarChar).Value = info.boardContent;
-            sqlCmd.Parameters.Add("@user_id", SqlDbType.VarChar).Value = info.userId;
-            if (info.filePath == null) { info.filePath = ""; }
-            sqlCmd.Parameters.Add("@filePath", SqlDbType.VarChar, 255).Value = info.filePath;
+            };
+            sqlCmd.Parameters.Add("@board_title", SqlDbType.VarChar,200).Value = info.boardTitle;
+            sqlCmd.Parameters.Add("@board_content", SqlDbType.Text).Value = info.boardContent;
+            sqlCmd.Parameters.Add("@user_id", SqlDbType.VarChar,200).Value = info.userId;
+                   
+            List<Boardfile> file = info.BoardFileList;
+            int boardId = SQLHelper.ExecuteScalarRetInt(sqlCmd);
 
-            return SQLHelper.ExecuteNonQuery(sqlCmd);
+            if (RegisterBoardFile(file, boardId))
+            {
+                return true;
+            }
+            
+
+            return false ;
         }
+        /// <summary>
+        /// 파일등록
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public bool RegisterBoardFile(List<Boardfile> file,int boardId)
+        {
+            
+            for(int i = 0; i < file.Count; i++)
+            {
+                SqlCommand sqlCmd = new SqlCommand
+                {
+                    CommandText = "Exercise@RegisterBoardFile",
+                    CommandType = CommandType.StoredProcedure
+                };
+                sqlCmd.Parameters.Add("@file_path", SqlDbType.VarChar,200).Value = file[i].filePath;
+                sqlCmd.Parameters.Add("@file_name", SqlDbType.VarChar,200).Value = file[i].fileName;
+                sqlCmd.Parameters.Add("@file_guid", SqlDbType.VarChar,200).Value = file[i].fileGuid;
+                sqlCmd.Parameters.Add("@board_id", SqlDbType.Int).Value = boardId;
+                SQLHelper.ExecuteNonQuery(sqlCmd);
+            }
+            return true;
+            
+        }
+
+
+
         /// <summary>
         /// 게시물 하나조회
         /// </summary>
@@ -106,29 +139,82 @@ namespace exerciseCrud.Dals
             SqlDataReader reader = SQLHelper.ExecuteReader(sqlCmd);
 
             BoardInfo info = null;
-
-            if (reader != null)
+            try
             {
-                if (reader.Read())
+                if (reader != null)
                 {
-                    info=new BoardInfo
+                    if (reader.Read())
                     {
-                        boardId = (int)reader["boardId"],
-                        boardTitle = reader["boardTitle"].ToString(),
-                        boardContent = reader["boardContent"].ToString(),
-                        regDate = (DateTime)reader["regDate"],
-                        viewCount = (int)reader["viewCount"],
-                        userId = reader["userId"].ToString(),
-                        recommend = (int)reader["recommend"],
-                        filePath = reader["filePath"].ToString(),
-                    };                  
+                        info = new BoardInfo
+                        {
+                            boardId = (int)reader["boardId"],
+                            boardTitle = reader["boardTitle"].ToString(),
+                            boardContent = reader["boardContent"].ToString(),
+                            regDate = (DateTime)reader["regDate"],
+                            viewCount = (int)reader["viewCount"],
+                            userId = reader["userId"].ToString()                          
+                        };
+                        info.BoardFileList = RetrieveBoardFile(boardId);
+                    }
                 }
             }
+            catch (Exception e) { }
+            finally
+            {
+                reader.Close();
+            }
+           
+
 
             return info;
         }
         /// <summary>
-        /// 게시물 삭제
+        /// 파일조회
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <returns></returns>
+        public List<Boardfile> RetrieveBoardFile(int boardId)
+        {
+            SqlCommand sqlCmd = new SqlCommand
+            {
+                CommandText = "Exercise@RetrieveBoardFile",
+                CommandType = CommandType.StoredProcedure
+            };
+            sqlCmd.Parameters.Add("@board_id", SqlDbType.Int).Value = boardId;
+            SqlDataReader reader = SQLHelper.ExecuteReader(sqlCmd);
+
+            List<Boardfile> list = new List<Boardfile>();
+            Boardfile file = null;
+            try
+            {
+                if (reader != null)
+                {
+                    while (reader.Read())
+                    {                       
+                        file = new Boardfile
+                        {
+                            boardId = (int)reader["boardId"],
+                            fileId = (int)reader["fileId"],
+                            fileName = reader["fileName"].ToString(),
+                            filePath = reader["filePath"].ToString(),
+                            fileGuid = reader["fileGuid"].ToString()
+                        };
+                        list.Add(file);
+                    }
+                }
+            }
+            catch (Exception) { }
+            finally
+            {
+                reader.Close();
+            }
+            return list;
+        }
+
+
+
+        /// <summary>
+        /// 게시물 삭제- 파일도
         /// </summary>
         /// <param name="boardId"></param>
         /// <returns></returns>
@@ -143,6 +229,25 @@ namespace exerciseCrud.Dals
             return SQLHelper.ExecuteNonQuery(sqlCmd);
         }
         /// <summary>
+        /// 파일 1개제거
+        /// </summary>
+        /// <param name="fileId"></param>
+        /// <returns></returns>
+        public bool DeleteBoardFile(int fileId)
+        {
+            SqlCommand sqlCmd = new SqlCommand
+            {
+                CommandText = "Exercise@DeleteBoardFile",
+                CommandType = CommandType.StoredProcedure
+            };
+            sqlCmd.Parameters.Add("@file_id", SqlDbType.Int).Value = fileId;
+            return SQLHelper.ExecuteNonQuery(sqlCmd);
+        }
+
+
+
+
+        /// <summary>
         /// 글 수정하기
         /// </summary>
         /// <param name="info"></param>
@@ -155,14 +260,57 @@ namespace exerciseCrud.Dals
                 CommandType = CommandType.StoredProcedure
             };
             sqlCmd.Parameters.Add("@board_id", SqlDbType.Int).Value = info.boardId;
-            sqlCmd.Parameters.Add("@board_title", SqlDbType.VarChar).Value = info.boardTitle;
-            sqlCmd.Parameters.Add("@board_content", SqlDbType.VarChar).Value = info.boardContent;
-            if (info.filePath == null) { info.filePath = ""; }
-            sqlCmd.Parameters.Add("@filePath", SqlDbType.VarChar, 255).Value = info.filePath;
+            sqlCmd.Parameters.Add("@board_title", SqlDbType.VarChar,200).Value = info.boardTitle;
+            sqlCmd.Parameters.Add("@board_content", SqlDbType.VarChar,200).Value = info.boardContent;
+            sqlCmd.Parameters.Add("@user_id", SqlDbType.VarChar,200).Value = info.userId;
+
+
             return SQLHelper.ExecuteNonQuery(sqlCmd);
         }
 
-        
+        /// <summary>
+        /// 파일 정보조회
+        /// </summary>
+        /// <param name="fileId"></param>
+        /// <returns></returns>
+        public Boardfile RetrieveBoardFileInfo(int fileId)
+        {
+            SqlCommand sqlCmd = new SqlCommand
+            {
+                CommandText = "Exercise@RetrieveBoardFileInfo",
+                CommandType = CommandType.StoredProcedure
+            };
+            sqlCmd.Parameters.Add("@file_id", SqlDbType.Int).Value = fileId;
+            SqlDataReader reader = SQLHelper.ExecuteReader(sqlCmd);
+
+            Boardfile file = null;
+            try
+            {
+                if (reader != null)
+                {
+                    if (reader.Read())
+                    {
+                        file = new Boardfile
+                        {
+                            boardId = (int)reader["boardId"],
+                            fileId = (int)reader["fileId"],
+                            fileName = reader["fileName"].ToString(),
+                            fileGuid = reader["fileGuid"].ToString(),
+                            filePath = reader["filePath"].ToString()
+                        };
+                        
+                    }
+                }
+            }
+            catch (Exception e) { }
+            finally
+            {
+                reader.Close();
+            }
+            return file;
+        }
+
+
         /// <summary>
         /// 조회수 상승
         /// </summary>
@@ -178,74 +326,7 @@ namespace exerciseCrud.Dals
             
             return SQLHelper.ExecuteNonQuery(sqlCmd);
         }
-        /// <summary>
-        /// 추천상승
-        /// </summary>
-        /// <param name="boardId"></param>
-        /// <returns></returns>
-        public bool UpdateRecommendUp(int boardId)
-        {
-            SqlCommand sqlCmd = new SqlCommand
-            {
-                CommandText = "Exercise@UpdateRecommendUp",
-                CommandType = CommandType.StoredProcedure
-            };
-            sqlCmd.Parameters.Add("@board_id", SqlDbType.Int).Value = boardId;
-
-            return SQLHelper.ExecuteNonQuery(sqlCmd);
-        }
-
-        //댓글======
-        /// <summary>
-        /// 게시물 당 댓글 조회
-        /// </summary>
-        /// <param name="boardId"></param>
-        /// <returns></returns>
-        public List<BoardComment> RetrieveBoardComment(int boardId)
-        {
-            SqlCommand sqlCmd = new SqlCommand
-            {
-                CommandText = "Exercise@RetrieveBoardComment",
-                CommandType = CommandType.StoredProcedure
-            };
-            sqlCmd.Parameters.Add("@board_id", SqlDbType.Int).Value = boardId;
-            SqlDataReader reader = SQLHelper.ExecuteReader(sqlCmd);
-        
-            List<BoardComment> list = new List<BoardComment>();
-
-            if (reader!=null)
-            {
-                while (reader.Read())
-                {
-                    list.Add(new BoardComment
-                    {
-                        commentId = (int)reader["commentId"],
-                        boardId = (int)reader["boardId"],
-                        userId = reader["userId"].ToString(),
-                        content = reader["content"].ToString(),
-                        regDate = (DateTime)reader["regDate"]
-                    });
-                }
-            }           
-            return list;
-        }
-
-        public bool RegisterBoardComment(BoardComment info)
-        {
-            SqlCommand sqlCmd = new SqlCommand
-            {
-                CommandText = "Exercise@RegisterBoardComment",
-                CommandType = CommandType.StoredProcedure
-            };
-            sqlCmd.Parameters.Add("@board_id", SqlDbType.Int).Value = info.boardId;
-            sqlCmd.Parameters.Add("@user_id", SqlDbType.VarChar).Value = info.userId;
-            sqlCmd.Parameters.Add("@content", SqlDbType.Text).Value = info.content;
-
-            return SQLHelper.ExecuteNonQuery(sqlCmd);
-        }
-
-
-
+       
 
 
 

@@ -7,7 +7,8 @@
 <h2>Write</h2>
 <form id="dropzone" name="dropzone" enctype="multipart/form-data" method="POST">
     <input type="hidden" id="fileText" name="fileName" value="" style="width:1000px;" readonly />
-    <input name="uploadedFile" type="hidden" id="uploadedFile" />
+    <input name="uploadedFileCnt" type="hidden" id="uploadedFileCnt" value="0" />
+    
     <table>
         <tr>
             <th style="width:5%">아이디</th>
@@ -25,7 +26,7 @@
             <td colspan="2">
                 <div id="dropZone" style="width:50%" class="dropzone">
                     <span>첨부파일을 추가하거나 드래그해주세욤</span>
-                    <input type="file" name="pUpload" id="pUpload" multiple="multiple" style="display:none;" />
+                    <input  type="file" id="wFileInput" style="display:none;" />
 
                     <!-- 파일 리스트 테이블  -->
                     <table class="input_table" id="fileListTable" style="display:none; width:50%">
@@ -83,7 +84,7 @@
     // 등록 가능한 총 파일 사이즈 MB
     var maxUploadSize = 500;
     // 등록 가능한 파일 갯수
-    var maxUploadCount = 1;
+    var maxUploadCount = 5;
 
 
     var oEditors = [];
@@ -103,7 +104,7 @@
             },
             fCreator: "createSEditor2"
         });
-        $('#pUpload').bind('change', function () {
+        $('#wFileInput').bind('change', function () {
             selectFile(this.files);
 
         });
@@ -137,18 +138,16 @@
             oEditors.getById["userId"].exec("FOCUS");
             return false;
         }
-        // 등록할 파일 리스트
-        
+
+
         if (confirm("등록 하시겠습니까?")) {
-            //등록할 파일 리스트를 formData로 데이터 입력
-
+            // 등록할 파일 리스트를 formData로 데이터 입력
             var form = $('#dropzone');
-            var formData = new FormData(form[0]);
-            
-            formData.append('file', fileList[uploadFileList[0]]);
-            
-
-            
+            var formData = new FormData(form[0]);           
+            for (var i = 0; i < uploadFileList.length; i++) {
+                formData.append('file' + (i + 1), fileList[uploadFileList[i]]);
+            }
+                      
             console.log(form);
             console.log(formData);
             
@@ -166,7 +165,8 @@
                     
                 },
                 error: function (d) {
-                    alert(d);
+                    alert("에러");
+                    location.href = "";
                 }
             });
 

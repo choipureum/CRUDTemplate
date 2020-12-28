@@ -1,0 +1,13 @@
+Mapping - 가상주소로 실 주소를 찾아내다
+parsing - 일련의 문자열을 의미있는 토큰(token)으로 분해하고 이들로 이루어진 파스 트리(parse tree)를 만드는 과정
+컴퓨팅에서 파서(parser)는 인터프리터나 컴파일러의 구성 요소 가운데 하나로, 입력 토큰에 내재된 자료 구조를 빌드하고 문법을 검사한다.
+
+- 스크립트, 객체지향
+- 파이썬, C#, JS HTML CSS
+- 주식예측, 크롤링 및 분석(깃허브)
+
+
+- 알고리즘(소수구하기, 프렌즈4블록, 덩치-초등 정보올림피아드 2013)-https://blue-boy.tistory.com/153
+-Bouncing Ball, Puzzle Game, 게시판
+https://social.msdn.microsoft.com/Forums/vstudio/en-US/d8170d63-c7a3-42c0-8f0e-9dfa86767feb/creating-pong-in-c-bouncing-the-ball-off-of-walls-and-paddles-issue?forum=csharpgeneral
+- 체스 
